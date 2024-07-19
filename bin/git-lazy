@@ -1,0 +1,7 @@
+MSG=$@
+if [ -z "$MSG" ]; then
+	echo "need a commit message";
+    exit 1;
+fi
+BRANCH=`git branch --no-color | grep -e ^* | cut -d' ' -f 2`;
+git add --all && git commit -m "$MSG" && git push -u origin $BRANCH;

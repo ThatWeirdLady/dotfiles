@@ -1,0 +1,53 @@
+setopt promptsubst
+autoload -U colors && colors
+
+function status_prompt() {
+	local EXIT=$?
+	if [[ $EXIT -ne 0 ]]; then
+		echo "%F{#0048ba}⛈%{$reset_color%}"
+	else
+		echo "%F{#fdee00}⛭%{$reset_color%}"
+	fi
+}
+
+
+last2dir_prompt() {
+	pwd | awk -F\/ '{print $(NF-1),$(NF)}' | sed "s/ /\\//"
+}
+
+
+git_prompt() {
+    isgit() {
+        if [ -d .git ] || git rev-parse --git-dir > /dev/null 2>&1; then
+            # is a git repo
+            return 0;
+        fi
+        # is not a git repo
+        return 1;   
+    }
+
+    gitisclean() {
+        DIFF=`git status --porcelain`
+        if [ -z "$DIFF" ]; then
+            # CLEAN
+            return 0;
+        else
+            # DIRTY
+            return 1;
+        fi
+    }
+
+    gitbranch() {
+        git rev-parse --abbrev-ref HEAD 2>/dev/null
+    }
+
+    if isgit; then
+        if gitisclean; then
+            echo "%{$fg[green]%}⎇ $(gitbranch)%{$reset_color%}"
+        else
+            echo "%{$fg[red]%}⎇ $(gitbranch)%{$reset_color%}"
+        fi
+    fi
+}
+
+PROMPT=$'\n''$(status_prompt) $(git_prompt) $(last2dir_prompt)'$'\n''%F{#FF80BE}❯%{$reset_color%} '
